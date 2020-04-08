@@ -3,7 +3,7 @@ object frmJEDIVCSToGit: TfrmJEDIVCSToGit
   Top = 0
   Caption = 'JEDIVCS To Git'
   ClientHeight = 539
-  ClientWidth = 840
+  ClientWidth = 977
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -18,14 +18,14 @@ object frmJEDIVCSToGit: TfrmJEDIVCSToGit
   object pnlTop: TPanel
     Left = 0
     Top = 0
-    Width = 840
+    Width = 977
     Height = 33
     Align = alTop
     TabOrder = 0
     object pnlGitRepos: TGridPanel
       Left = 1
       Top = 1
-      Width = 838
+      Width = 975
       Height = 31
       Align = alClient
       ColumnCollection = <
@@ -34,21 +34,21 @@ object frmJEDIVCSToGit: TfrmJEDIVCSToGit
           Value = 135.000000000000000000
         end
         item
-          Value = 30.000000013333320000
+          Value = 28.364547670943320000
         end
         item
           SizeStyle = ssAbsolute
           Value = 115.000000000000000000
         end
         item
-          Value = 34.999999993333340000
+          Value = 25.991981310175550000
         end
         item
           SizeStyle = ssAbsolute
           Value = 120.000000000000000000
         end
         item
-          Value = 34.999999993333340000
+          Value = 23.817861501652200000
         end
         item
           SizeStyle = ssAbsolute
@@ -57,6 +57,13 @@ object frmJEDIVCSToGit: TfrmJEDIVCSToGit
         item
           SizeStyle = ssAbsolute
           Value = 110.000000000000000000
+        end
+        item
+          SizeStyle = ssAbsolute
+          Value = 70.000000000000000000
+        end
+        item
+          Value = 21.825609517228930000
         end>
       ControlCollection = <
         item
@@ -98,6 +105,16 @@ object frmJEDIVCSToGit: TfrmJEDIVCSToGit
           Column = 6
           Control = chkStatus
           Row = 0
+        end
+        item
+          Column = 8
+          Control = Label1
+          Row = 0
+        end
+        item
+          Column = 9
+          Control = edtMinRevID
+          Row = 0
         end>
       RowCollection = <
         item
@@ -105,48 +122,54 @@ object frmJEDIVCSToGit: TfrmJEDIVCSToGit
         end>
       TabOrder = 0
       DesignSize = (
-        838
+        975
         31)
       object edtNewGitRepoPath: TEdit
         AlignWithMargins = True
-        Left = 556
+        Left = 562
         Top = 4
-        Width = 92
+        Width = 76
         Height = 23
         Align = alClient
         TabOrder = 3
+        ExplicitHeight = 24
       end
       object lblNewGitRepoPath: TLabel
         AlignWithMargins = True
-        Left = 436
+        Left = 442
         Top = 4
         Width = 114
-        Height = 26
+        Height = 23
         Align = alClient
         Caption = 'New Git Repo Path'
         Layout = tlCenter
+        ExplicitWidth = 106
+        ExplicitHeight = 16
       end
       object lblOldGitRepoPath: TLabel
         AlignWithMargins = True
-        Left = 223
+        Left = 237
         Top = 4
         Width = 109
-        Height = 26
+        Height = 23
         Align = alClient
         Caption = 'Old Git Repo Path'
         Layout = tlCenter
+        ExplicitWidth = 100
+        ExplicitHeight = 16
       end
       object edtOldGitRepoPath: TEdit
         AlignWithMargins = True
-        Left = 338
+        Left = 352
         Top = 4
-        Width = 92
+        Width = 84
         Height = 23
         Align = alClient
         TabOrder = 2
+        ExplicitHeight = 24
       end
       object btnGetRevisions: TButton
-        Left = 732
+        Left = 722
         Top = 3
         Width = 97
         Height = 25
@@ -160,25 +183,28 @@ object frmJEDIVCSToGit: TfrmJEDIVCSToGit
         Left = 4
         Top = 4
         Width = 129
-        Height = 26
+        Height = 23
         Align = alClient
         Caption = 'Project Name Pattern'
         Layout = tlCenter
+        ExplicitWidth = 122
+        ExplicitHeight = 16
       end
       object edtProjectNamePattern: TEdit
         AlignWithMargins = True
         Left = 139
         Top = 4
-        Width = 78
+        Width = 92
         Height = 23
         Align = alClient
         TabOrder = 1
         Text = 'edtProjectNamePattern'
         OnExit = edtProjectNamePatternExit
+        ExplicitHeight = 24
       end
       object chkStatus: TCheckBox
         AlignWithMargins = True
-        Left = 654
+        Left = 644
         Top = 4
         Width = 69
         Height = 23
@@ -186,12 +212,36 @@ object frmJEDIVCSToGit: TfrmJEDIVCSToGit
         Caption = 'Status'
         TabOrder = 4
       end
+      object Label1: TLabel
+        AlignWithMargins = True
+        Left = 829
+        Top = 4
+        Width = 64
+        Height = 23
+        Align = alClient
+        Caption = 'Min. RevID'
+        Layout = tlCenter
+        ExplicitWidth = 61
+        ExplicitHeight = 16
+      end
+      object edtMinRevID: TEdit
+        AlignWithMargins = True
+        Left = 899
+        Top = 4
+        Width = 72
+        Height = 23
+        Align = alClient
+        TabOrder = 5
+        Text = '0'
+        OnExit = edtProjectNamePatternExit
+        ExplicitHeight = 24
+      end
     end
   end
   object StatusBar: TStatusBar
     Left = 0
     Top = 520
-    Width = 840
+    Width = 977
     Height = 19
     Panels = <
       item
@@ -203,7 +253,7 @@ object frmJEDIVCSToGit: TfrmJEDIVCSToGit
   object pnlMainqq: TPanel
     Left = 0
     Top = 33
-    Width = 840
+    Width = 977
     Height = 487
     Align = alClient
     Caption = 'pnlMain'
@@ -211,16 +261,17 @@ object frmJEDIVCSToGit: TfrmJEDIVCSToGit
     object Splitter: TSplitter
       Left = 1
       Top = 375
-      Width = 838
+      Width = 975
       Height = 3
       Cursor = crVSplit
       Align = alBottom
       ResizeStyle = rsUpdate
+      ExplicitWidth = 838
     end
     object pnlMain: TPanel
       Left = 1
       Top = 1
-      Width = 838
+      Width = 975
       Height = 374
       Align = alClient
       BevelOuter = bvNone
@@ -229,16 +280,17 @@ object frmJEDIVCSToGit: TfrmJEDIVCSToGit
       object DBGridSplitter: TSplitter
         Left = 0
         Top = 257
-        Width = 838
+        Width = 975
         Height = 3
         Cursor = crVSplit
         Align = alBottom
         ResizeStyle = rsUpdate
+        ExplicitWidth = 838
       end
       object DBGrid: TDBGrid
         Left = 0
         Top = 0
-        Width = 838
+        Width = 975
         Height = 257
         Align = alClient
         Color = clBtnFace
@@ -254,7 +306,7 @@ object frmJEDIVCSToGit: TfrmJEDIVCSToGit
       object BlobsGrid: TDBGrid
         Left = 0
         Top = 260
-        Width = 838
+        Width = 975
         Height = 114
         Align = alBottom
         DataSource = BlobsDataSource
@@ -270,7 +322,7 @@ object frmJEDIVCSToGit: TfrmJEDIVCSToGit
     object lbxGitOutput: TListBox
       Left = 1
       Top = 378
-      Width = 838
+      Width = 975
       Height = 108
       Style = lbOwnerDrawFixed
       Align = alBottom
@@ -302,6 +354,7 @@ object frmJEDIVCSToGit: TfrmJEDIVCSToGit
   end
   object RevisionsDataSource: TDataSource
     DataSet = RevisionsFDQuery
+    OnDataChange = RevisionsDataSourceDataChange
     Left = 744
     Top = 96
   end
@@ -309,17 +362,28 @@ object frmJEDIVCSToGit: TfrmJEDIVCSToGit
     Connection = FDConnection
     SQL.Strings = (
       'SELECT DISTINCT'
-      '  M.MODULEID, M.NAME AS [Module Name], M.PATH,'
+      '  M.MODULEID, M.NAME AS ModuleName, br.PATH,'
       '  R.REVISIONID, R.VERSION, R.REVISION, R.COMMENT_I,'
-      '  VL.TSTAMP, VL.DESCRIPTION'
+      
+        '  VL.TSTAMP, VL.DESCRIPTION,CONCAT(u.login,'#39' <'#39',trim(u.descripti' +
+        'on),'#39'>'#39') Author'
       'FROM projects P'
       '  INNER JOIN pjmodule PM ON P.PROJECTID = PM.PROJECTID'
-      '  INNER JOIN modules M ON PM.MODULEID = M.MODULEID'
+      
+        '  INNER JOIN modules M ON PM.MODULEID = M.MODULEID and (!Project' +
+        'NamePattern like '#39'xlib%'#39' or not m.path like '#39'%xlib%'#39') '
+      '                          and m.name <> '#39'version.rc'#39
+      
+        '  INNER JOIN brmodule br on br.moduleid = m.moduleid and br.bran' +
+        'chid = 1  and (!ProjectNamePattern like '#39'xlib%'#39' or not br.path l' +
+        'ike '#39'%xlib%'#39') '
       '  INNER JOIN revision R ON M.MODULEID = R.MODULEID'
       '  INNER JOIN logcomm L ON L.REVISIONID = R.REVISIONID'
       '  INNER JOIN vcslog VL ON L.LOGID = VL.LOGID'
+      '  INNER JOIN users u on u.userid = r.userid'
       'WHERE'
-      '  P.NAME LIKE !ProjectNamePattern'
+      '  P.NAME LIKE !ProjectNamePattern  '
+      'and r.revisionid >= !MinRevID'
       'ORDER BY'
       '  TSTAMP, MODULEID, VERSION, REVISION')
     Left = 632
@@ -329,6 +393,10 @@ object frmJEDIVCSToGit: TfrmJEDIVCSToGit
         Value = 'BrowseAndDocIt%'
         Name = 'PROJECTNAMEPATTERN'
         DataType = mdString
+      end
+      item
+        Value = Null
+        Name = 'MINREVID'
       end>
   end
   object BlobsFDQuery: TFDQuery
@@ -346,5 +414,9 @@ object frmJEDIVCSToGit: TfrmJEDIVCSToGit
     DataSet = BlobsFDQuery
     Left = 744
     Top = 352
+  end
+  object FDPhysMySQLDriverLink1: TFDPhysMySQLDriverLink
+    Left = 377
+    Top = 154
   end
 end

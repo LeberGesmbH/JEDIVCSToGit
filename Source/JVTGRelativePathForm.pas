@@ -93,15 +93,16 @@ ResourceString
 
 Begin
   Result := boolResult;
-  If Not DirectoryExists(strNewGitRepoPath + strRelPath) Then
-    If InputQuery(Application.Title, strCreateDirectory, strRelPath) Then
-      Begin
+  If Not DirectoryExists(strNewGitRepoPath + strRelPath) Then begin
+//    If InputQuery(Application.Title, strCreateDirectory, strRelPath) Then Begin
         AddTrailingSlash(strRelPath);
         If Not ForceDirectories(strNewGitRepoPath + strRelPath) Then
           Raise Exception.Create(Format(strCouldNotCreateFolder,
             [strNewGitRepoPath + strRelPath]));
-      End Else
-        Result := False;
+//    End Else begin
+//      Result := False;
+//    end;
+  end;
 End;
 
 (**
@@ -137,33 +138,33 @@ Begin
         Begin
           strRelPath := RepoData.FModulePath;
           Delete(strRelPath, 1, iLen);
-          slPaths.Values[RepoData.FModuleName] := strRelPath;
           Result := True;
-        End Else
-          Begin
-            F := TfrmExtractRelPath.Create(Application.MainForm);
-            Try
-              F.edtExistingGitRepoPath.Text := RepoData.FOLDGitRepoPath;
-              F.edtModulePath.Text := RepoData.FModulePath;
-              F.edtModuleName.Text := RepoData.FModuleName;
-              F.edtRelPath.Text := strRelPath;
-              For i := 0 To slPaths.Count -  1 Do
-                If F.edtRelPath.Items.IndexOf(slPaths.ValueFromIndex[i]) = -1 Then
-                  F.edtRelPath.Items.Add(slPaths.ValueFromIndex[i]);
-              iResult := F.ShowModal;
-              Case iResult Of
-                mrOk:
-                  Begin
-                    strRelPath := F.edtRelPath.Text;
-                    F.AddTrailingSlash(strRelPath);
-                    slPaths.Values[RepoData.FModuleName] := strRelPath;
-                    Result := True;
-                  End;
-                mrAbort: Abort;
-              End;  
-            Finally
-              F.Free;
-            End;
+// Ignore Units outside of OldPath
+//        End Else
+//          Begin
+//            F := TfrmExtractRelPath.Create(Application.MainForm);
+//            Try
+//              F.edtExistingGitRepoPath.Text := RepoData.FOLDGitRepoPath;
+//              F.edtModulePath.Text := RepoData.FModulePath;
+//              F.edtModuleName.Text := RepoData.FModuleName;
+//              F.edtRelPath.Text := strRelPath;
+//              For i := 0 To slPaths.Count -  1 Do
+//                If F.edtRelPath.Items.IndexOf(slPaths.ValueFromIndex[i]) = -1 Then
+//                  F.edtRelPath.Items.Add(slPaths.ValueFromIndex[i]);
+//              iResult := F.ShowModal;
+//              Case iResult Of
+//                mrOk:
+//                  Begin
+//                    strRelPath := F.edtRelPath.Text;
+//                    F.AddTrailingSlash(strRelPath);
+//                    slPaths.Values[RepoData.FModuleName] := strRelPath;
+//                    Result := True;
+//                  End;
+//                mrAbort: Abort;
+//              End;
+//            Finally
+//              F.Free;
+//            End;
           End;
     End Else
     Begin

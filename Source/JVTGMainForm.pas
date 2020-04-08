@@ -45,7 +45,7 @@ Uses
   FireDAC.DApt,
   FireDAC.Comp.DataSet,
   Vcl.StdCtrls,
-  Vcl.ExtCtrls, Vcl.ComCtrls;
+  Vcl.ExtCtrls, Vcl.ComCtrls, FireDAC.Phys.MySQLDef, FireDAC.Phys.MySQL;
 
 Type
   (** A form to hold data sets from the JED VCS database containing the revisions and blobs. **)
@@ -73,6 +73,9 @@ Type
     edtOldGitRepoPath: TEdit;
     lbxGitOutput: TListBox;
     chkStatus: TCheckBox;
+    FDPhysMySQLDriverLink1: TFDPhysMySQLDriverLink;
+    Label1: TLabel;
+    edtMinRevID: TEdit;
     Procedure btnGetRevisionsClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -82,6 +85,7 @@ Type
       State: TOwnerDrawState);
     procedure DBGridDrawDataCell(Sender: TObject; const Rect: TRect; Field: TField;
       State: TGridDrawState);
+    procedure RevisionsDataSourceDataChange(Sender: TObject; Field: TField);
   Strict Private
     Type
       (** A record to describe the information required by DGHCreateProcess. @nohints **)
@@ -113,7 +117,7 @@ Type
   Strict Protected
     Procedure LoadSettings;
     Procedure SaveSettings;
-    Procedure CommitToGit(Const strComment: String; Const dtCommitDateTime: TDateTime);
+    Procedure CommitToGit(Const _Comment, _Author: String; Const _CommitDateTime: TDateTime);
     Procedure ProcessMsgevent(Const strMsg: String; Var boolAbort: Boolean;
       Const MsgType : TMsgType = mtInformation);
     Procedure IdleEvent;
@@ -138,15 +142,15 @@ Implementation
 
 Uses
   {$IFDEF DEBUG}
-  CodeSiteLogging,
+//  CodeSiteLogging,
   {$ENDIF}
   System.IniFiles,
   System.Zip,
   System.UITypes,
   JVTGRelativePathForm,
-  JVTGTypes, 
-  JVTGGitErrorForm, 
-  JVTGFunctions;
+  JVTGTypes,
+  JVTGGitErrorForm,
+  JVTGFunctions, System.StrUtils;
 
 ResourceString
   (** A resource string to say that the directory was not found. **)
@@ -155,6 +159,10 @@ ResourceString
   strUserAbort = 'User Abort!';
   (** A resource string to say that the EXE file was not found. **)
   strEXENotFound = 'The executable file "%s" does not exist.';
+Const
+  strProjectNamePatternMacro = 'ProjectNamePattern';
+  strMinRevID = 'MinRevID';
+
 
 Const
   (** An ini section name for the majority of the application settings. **)
@@ -338,39 +346,39 @@ Const
       @param   strFileToExtract as a String as a constant
 
     **)
-    Procedure CheckFileNamesForRename(Const strSubDir, strFileToExtract : String);
-
-    ResourceString
-      strFileNeedsRenaming = 'The file "%s" needs renaming to "%s"!';
-    
-    Const
-      strModuleName = 'Module Name';
-      strExtension = 'Extension';
-      strMoveParams = 'mv -v "%s" "%s%s"';
-    
-    Var
-      strOldFileName: String;
-      strRepoFileName: String;
-      strActualPathAndFile: String;
-    
-    Begin
-      strRepoFileName :=
-        RevisionsDataSource.DataSet.FieldByName(strModuleName).AsString + '.' +
-        BlobsDataSource.DataSet.FieldByName(strExtension).AsString;
-      strOldFileName := FFileNames.Values[strRepoFileName];
-      If strOldFileName <> '' Then
-        If CompareText(strOldFileName, strFileToExtract) <> 0 Then
-          Begin
-            CodeSite.Send(Format(strFileNeedsRenaming, [strOldFileName, strFileToExtract]));
-            strActualPathAndFile := strSubDir + strOldFileName;
-            strActualPathAndFile := GetActualPathAndFileCase(strActualPathAndFile);
-            ExecuteGit(Format(strMoveParams, [strActualPathAndFile,
-              ExtractFilePath(strActualPathAndFile), strFileToExtract]));
-            If chkStatus.Checked Then
-              ExecuteGit(strGitStatus);
-          End;
-      FFileNames.Values[strRepoFilename] := strFileToExtract;
-    End;
+//    Procedure CheckFileNamesForRename(Const strSubDir, strFileToExtract : String);
+//
+//    ResourceString
+//      strFileNeedsRenaming = 'The file "%s" needs renaming to "%s"!';
+//
+//    Const
+//      strModuleName = 'ModuleName';
+//      strExtension = 'Extension';
+//      strMoveParams = 'mv -v "%s" "%s%s"';
+//
+//    Var
+//      strOldFileName: String;
+//      strRepoFileName: String;
+//      strActualPathAndFile: String;
+//
+//    Begin
+//      strRepoFileName :=
+//        RevisionsDataSource.DataSet.FieldByName(strModuleName).AsString + '.' +
+//        BlobsDataSource.DataSet.FieldByName(strExtension).AsString;
+//      strOldFileName := FFileNames.Values[strRepoFileName];
+//      If strOldFileName <> '' Then
+//        If CompareText(strOldFileName, strFileToExtract) <> 0 Then
+//          Begin
+////            CodeSite.Send(Format(strFileNeedsRenaming, [strOldFileName, strFileToExtract]));
+//            strActualPathAndFile := strSubDir + strOldFileName;
+//            strActualPathAndFile := GetActualPathAndFileCase(strActualPathAndFile);
+//            ExecuteGit(Format(strMoveParams, [strActualPathAndFile,
+//              ExtractFilePath(strActualPathAndFile), strFileToExtract]));
+//            If chkStatus.Checked Then
+//              ExecuteGit(strGitStatus);
+//          End;
+//      FFileNames.Values[strRepoFilename] := strFileToExtract;
+//    End;
   
   ResourceString
     strExtracting = 'Extracting: %s';
@@ -379,7 +387,7 @@ Const
     strFileData = 'FileData';
     strAddParams = 'add -v "%s"';
     strPath = 'path';
-    strModuleName = 'Module Name';
+    strModuleName = 'ModuleName';
 
   Var
     Z: TZipFile;
@@ -403,9 +411,8 @@ Const
               RepoData.Create(FOldGitRepoPath, FNewGitRepoPath,
                 RevisionsDataSource.Dataset.FieldByName(strPath).AsString,
                 RevisionsDataSource.Dataset.FieldByName(strModuleName).AsString);
-              If TfrmExtractRelPath.Execute(FRelativePaths, RepoData, strSubDir) Then
-                Begin
-                  CheckFileNamesForRename(strSubDir, Z.FileName[iFile]);
+              If TfrmExtractRelPath.Execute(FRelativePaths, RepoData, strSubDir) Then Begin
+                  //CheckFileNamesForRename(strSubDir, Z.FileName[iFile]);
                   Z.Extract(Z.FileName[iFile], FNewGitRepoPath + strSubDir);
                   ProcessMsgevent(Format(strExtracting, [FNewGitRepoPath + strSubDir + Z.FileName[iFile]]),
                     boolAbort);
@@ -440,16 +447,18 @@ Const
     strBlobZip = 'Blob.zip';
     strComment_i = 'comment_i';
     strTSTAMP = 'TSTAMP';
-   
+    strAuthor = 'Author';
+
   Var
     strZipFileName: String;
-    
+
   Begin
     strZipFileName := FNewGitRepoPath + strBlobZip;
     While Not RevisionsDataSource.DataSet.Eof Do
       Begin
         ProcessBlobs(strZipFileName);
         CommitToGit(RevisionsDataSource.DataSet.FieldByName(strComment_i).AsString,
+          RevisionsDataSource.DataSet.FieldByName(strAuthor).AsString,
           RevisionsDataSource.DataSet.FieldByName(strTSTAMP).AsDateTime);
         If chkStatus.Checked Then
           ExecuteGit(strGitStatus);
@@ -563,20 +572,24 @@ End;
   @param   dtCommitDateTime as a TDateTime as a constant
 
 **)
-Procedure TfrmJEDIVCSToGit.CommitToGit(Const strComment: String; Const dtCommitDateTime: TDateTime);
+Procedure TfrmJEDIVCSToGit.CommitToGit(Const _Comment, _Author: String; Const _CommitDateTime: TDateTime);
 
 Const
   strCommitDate = 'commit -v --date "%s" -m "%s"';
-  strDateFmt = 'dd/mmm/yyyy HH:nn:ss';
+  strDateFmt = 'YYYY-MM-DD hh:nn:ss';
 
 Var
   strCleanComment : String;
-  
+
 Begin
-  strCleanComment := StringReplace(strComment, '"', '''', [rfReplaceAll]);
-  strCleanComment := StringReplace(strCleanComment, #13, '', [rfReplaceAll]);
-  strCleanComment := StringReplace(strCleanComment, #10, '\n', [rfReplaceAll]);
-  ExecuteGit(Format(strCommitDate, [FormatDateTime(strDateFmt, dtCommitDateTime), strCleanComment]));
+  if trim(_Comment) = '' then begin
+    strCleanComment := IfThen(_Author <> '', 'commited by ' + _Author, 'no commit message');
+  end else begin
+    strCleanComment := StringReplace(trim(_Comment), '"', '''', [rfReplaceAll]);
+  end;
+//  strCleanComment := StringReplace(strCleanComment, #13, '', [rfReplaceAll]);
+//  strCleanComment := StringReplace(strCleanComment, #10, '\n', [rfReplaceAll]);
+  ExecuteGit(Format(strCommitDate, [FormatDateTime(strDateFmt, _CommitDateTime), strCleanComment]) + IfThen(_Author <> '', ' --author="' + _Author + '"'));
 End;
 
 (**
@@ -866,15 +879,10 @@ End;
 
 **)
 Procedure TfrmJEDIVCSToGit.edtProjectNamePatternExit(Sender: TObject);
-
-Const
-  strProjectNamePatternMacro = 'ProjectNamePattern';
-
 Var
-  M: TFDMacro;
   iColumn: Integer;
   aiColumnWidths : TArray<Integer>;
-
+  M: TFDMacro;
 Begin
   If FDConnection.Connected Then
     Begin
@@ -883,6 +891,9 @@ Begin
         aiColumnWidths[iColumn] := DBGrid.Columns[iColumn].Width;
       M := RevisionsFDQuery.MacroByName(strProjectNamePatternMacro);
       M.Value := edtProjectNamePattern.Text;
+      M := RevisionsFDQuery.MacroByName(strMinRevID);
+      M.Value := edtMinRevID.Text;
+
       RevisionsFDQuery.Active := True;
       For iColumn := 0 To DBGrid.Columns.Count - 1 Do
         DBGrid.Columns[iColumn].Width := aiColumnWidths[iColumn];
@@ -915,10 +926,13 @@ Begin
     boolAbort, mtTitle);
   FLastMessage := '';
   iResult := DGHCreateProcess(FGitPI, ProcessMsgEvent, IdleEvent);
-  If iResult <> 0 Then
-    Case TfrmGITError.Execute(Format(strMsg, [strCmdParams, FLastMessage])) Of
-      mrAbort: Abort;
-    End;
+  If iResult <> 0 Then begin
+    if not FLastMessage.Contains('.gitignore') then begin
+      Case TfrmGITError.Execute(Format(strMsg, [strCmdParams, FLastMessage])) Of
+        mrAbort: Abort;
+      End;
+    end;
+  end;
   ProcessMsgevent(#13#10, boolAbort);
 End;
 
@@ -935,7 +949,7 @@ End;
 Procedure TfrmJEDIVCSToGit.FormCreate(Sender: TObject);
 
 ResourceString
-  strPleaseSpecifyFireDACINIFileAsFirstParameter = 'Please specify a FireDAC INI file as the first ' + 
+  strPleaseSpecifyFireDACINIFileAsFirstParameter = 'Please specify a FireDAC INI file as the first ' +
     'parameter!';
   strCouldNotLoadINIFile = 'Could not load the INI file "%s"';
   strJEDIVCSToGitBuild = 'JEDI VCS to Git %d.%d%s (Build %d.%d.%d.%d): ';
@@ -943,10 +957,10 @@ ResourceString
 Const
   strBugFix = ' abcedfghijklmnopqrstuvwxyz';
   strGITExe = 'GIT.exe';
-  
+
 Var
   BuildInfo: TJVTGBuildInfo;
-
+  M: TFDMacro;
 Begin
   GetBuildInfo(BuildInfo);
   Caption := Format(strJEDIVCSToGitBuild, [
@@ -968,6 +982,10 @@ Begin
     Begin
       FDConnection.Params.LoadFromFile(ParamStr(1));
       FDConnection.Connected := True;
+      M := RevisionsFDQuery.MacroByName(strProjectNamePatternMacro);
+      M.Value := edtProjectNamePattern.Text;
+      M := RevisionsFDQuery.MacroByName(strMinRevID);
+      M.Value := edtMinRevID.Text;
       RevisionsFDQuery.Active := True;
       BlobsFDQuery.Active := True;
     End Else
@@ -1200,6 +1218,12 @@ Begin
     sl.Free;
   End;
 End;
+
+procedure TfrmJEDIVCSToGit.RevisionsDataSourceDataChange(Sender: TObject;
+  Field: TField);
+begin
+
+end;
 
 (**
 

@@ -372,13 +372,15 @@ object frmJEDIVCSToGit: TfrmJEDIVCSToGit
       
         '  INNER JOIN modules M ON PM.MODULEID = M.MODULEID and (!Project' +
         'NamePattern like '#39'xlib%'#39' or not m.path like '#39'%xlib%'#39') '
-      '                          and m.name <> '#39'version.rc'#39
+      '                          and m.name <> '#39'version.rc'#39' '
       
         '  INNER JOIN brmodule br on br.moduleid = m.moduleid and br.bran' +
         'chid = 1  and (!ProjectNamePattern like '#39'xlib%'#39' or not br.path l' +
         'ike '#39'%xlib%'#39') '
-      '  INNER JOIN revision R ON M.MODULEID = R.MODULEID'
-      '  INNER JOIN logcomm L ON L.REVISIONID = R.REVISIONID'
+      
+        '  INNER JOIN revision R ON M.MODULEID = R.MODULEID AND (comment_' +
+        'i NOT LIKE '#39'ATESTD10%'#39')'
+      '  INNER JOIN logcomm L ON L.REVISIONID = R.REVISIONID '
       '  INNER JOIN vcslog VL ON L.LOGID = VL.LOGID'
       '  INNER JOIN users u on u.userid = r.userid'
       'WHERE'

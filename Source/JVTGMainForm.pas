@@ -7,6 +7,8 @@
   @Version 1.0
   @Date    22 Feb 2018
   
+  Exclude checkin from atestd10
+  
 **)
 Unit JVTGMainForm;
 
